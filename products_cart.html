@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Products - Construct Hub</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div>
+        <a href="javascript:history.back()" style="font-size: 18px; margin-right: 15px;">&lt;- Back</a>
+        <a href="index.html">Construct Hub</a>
+      </div>
+      <div>
+        <a href="products_cart.html">Products</a> |
+        <a href="orders.html">My Orders</a> |
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>Products</h2>
+      <div id="products" class="product-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Your Cart</h2>
+      <div id="cart"></div>
+      <p><a href="checkout_payment.html"><button>Go to Checkout</button></a></p>
+    </div>
+
+    <div class="card">
+      <h2>Need Help?</h2>
+      <div id="chatBox" class="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Ask a question">
+        <button type="button" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      alert("Please log in first.");
+      window.location = "accounts.html";
+    }
+
+    async function loadProducts(){
+      const res = await fetch("http://localhost:5000/products");
+      const data = await res.json();
+
+      document.getElementById("products").innerHTML =
+        data.map(p => `
+          <div class="product-card">
+            <h3>${p.name}</h3>
+            <p>₹${p.price}</p>
+            <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})">Add to Cart</button>
+          </div>
+        `).join("");
+    }
+
+    function addToCart(id, name, price){
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      
+      // Check if item already exists in cart
+      let existingItem = cart.find(item => item.id === id);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({id: id, name: name, price: price, quantity: 1});
+      }
+      
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    function renderCart(){
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      document.getElementById("cart").innerHTML =
+        cart.length > 0
+          ? cart.map((item, idx) => `
+              <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd;">
+                <div style="flex: 1;">
+                  <strong>${item.name}</strong><br>
+                  <span>₹${item.price} each</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button onclick="changeQuantity(${idx}, -1)" style="width: 30px; height: 30px;">-</button>
+                  <span style="min-width: 30px; text-align: center;">${item.quantity}</span>
+                  <button onclick="changeQuantity(${idx}, 1)" style="width: 30px; height: 30px;">+</button>
+                  <button onclick="removeFromCart(${idx})" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 3px;">Remove</button>
+                </div>
+              </div>
+            `).join("")
+          : "<p>Your cart is empty.</p>";
+    }
+
+    function changeQuantity(idx, change){
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      if (cart[idx]) {
+        cart[idx].quantity += change;
+        if (cart[idx].quantity <= 0) {
+          cart.splice(idx, 1);
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        renderCart();
+      }
+    }
+
+    function removeFromCart(idx){
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      cart.splice(idx, 1);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location = "login.html";
+    }
+
+    loadProducts();
+    renderCart();
+  </script>
+</body>
+</html>

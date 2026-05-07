@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Construct Hub</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Construct Hub</h1>
+    <div class="card">
+      <p>Welcome to the construction supplies demo. Use the links below to log in, browse products, and checkout.</p>
+      <nav>
+        <a href="login.html">Login</a> |
+        <a href="signup.html">Signup</a> |
+        <a href="products_cart.html">Products & Cart</a> |
+        <a href="checkout_payment.html">Checkout</a>
+      </nav>
+    </div>
+
+    <div class="card">
+      <h2>How it works</h2>
+      <ul>
+        <li>Go to Signup to create an account.</li>
+        <li>Login to access your dashboard.</li>
+        <li>Browse products and add items to your cart.</li>
+        <li>Place your order on the Checkout page with secure payment.</li>
+        <li>View your order history in My Orders.</li>
+        <li><strong>Admin:</strong> Login with constructhub@gmail.com / construct@hub to manage orders.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Need help?</h2>
+      <div id="chatBox" class="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Ask a question about the store">
+        <button type="button" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

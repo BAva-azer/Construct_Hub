@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup - Construct Hub</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div>
+        <a href="javascript:history.back()" style="font-size: 18px; margin-right: 15px;">&lt;- Back</a>
+        <a href="index.html">Construct Hub</a>
+      </div>
+      <div>
+        <a href="login.html">Login</a> |
+        <a href="signup.html">Signup</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>Signup</h2>
+      <form id="signupForm">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label for="signupEmail">Email</label>
+          <input type="email" id="signupEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" required>
+        </div>
+        <button type="submit">Signup</button>
+      </form>
+      <p style="margin-top: 20px; text-align: center;">
+        Already have an account? <a href="login.html" style="color: #667eea;">Login here</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById("signupForm");
+    const nameInput = document.getElementById("name");
+    const signupEmailInput = document.getElementById("signupEmail");
+    const signupPasswordInput = document.getElementById("signupPassword");
+
+    signupForm.onsubmit = async (e) => {
+      e.preventDefault();
+
+      try {
+        const res = await fetch("http://localhost:5000/signup", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            name: nameInput.value,
+            email: signupEmailInput.value,
+            password: signupPasswordInput.value
+          })
+        });
+
+        const message = await res.text();
+        alert(message);
+        
+        if (message.includes("successful")) {
+          window.location = "login.html";
+        }
+      } catch (error) {
+        alert("Error: " + error.message + "\nMake sure backend is running on http://localhost:5000");
+      }
+    };
+  </script>
+</body>
+</html>

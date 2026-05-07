@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Construct Hub</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div>
+        <a href="javascript:history.back()" style="font-size: 18px; margin-right: 15px;">&lt;- Back</a>
+        <a href="index.html">Construct Hub</a>
+      </div>
+      <div>
+        <a href="login.html">Login</a> |
+        <a href="signup.html">Signup</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+      <p style="margin-top: 20px; text-align: center;">
+        Don't have an account? <a href="signup.html" style="color: #667eea;">Sign up here</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+
+      try {
+        const res = await fetch("http://localhost:5000/login", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            email: emailInput.value,
+            password: passwordInput.value
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          if (data.user.role === "admin") {
+            window.location = "admin.html";
+          } else {
+            window.location = "products_cart.html";
+          }
+        } else {
+          alert("Invalid email or password");
+        }
+      } catch (error) {
+        alert("Error: " + error.message + "\nMake sure backend is running on http://localhost:5000");
+      }
+    };
+  </script>
+</body>
+</html>

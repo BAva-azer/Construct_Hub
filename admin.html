@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard - Construct Hub</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div>
+        <a href="javascript:history.back()" style="font-size: 18px; margin-right: 15px;">&lt;- Back</a>
+        <a href="index.html">Construct Hub</a>
+      </div>
+      <div>
+        <a href="admin.html">Admin Dashboard</a> |
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>Admin Dashboard</h2>
+      <p>Manage orders, approve/reject, and send shipping reminders.</p>
+    </div>
+
+    <div class="card">
+      <h2>Orders</h2>
+      <div id="orders"></div>
+    </div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "admin") {
+      alert("Access denied. Admin only.");
+      window.location = "accounts.html";
+    }
+
+    async function loadOrders() {
+      const res = await fetch("http://localhost:5000/admin/orders");
+      const orders = await res.json();
+
+      document.getElementById("orders").innerHTML = orders.map(order => {
+        let cartItems = "";
+        let orderTotal = 0;
+        try {
+          const cart = JSON.parse(order.cart);
+          cartItems = Array.isArray(cart) 
+            ? cart.map(item => {
+                const quantity = item.quantity || 1;
+                const itemTotal = item.price * quantity;
+                orderTotal += itemTotal;
+                return `<div style="margin: 5px 0;">• ${item.name} - ₹${item.price} × ${quantity} = ₹${itemTotal}</div>`;
+              }).join("")
+            : order.cart;
+        } catch (e) {
+          cartItems = order.cart;
+        }
+        
+        return `
+        <div class="card" style="margin: 10px 0;">
+          <h3>Order #${order.id}</h3>
+          <p><strong>User:</strong> ${order.user.name} (${order.user.email})</p>
+          <p><strong>Items:</strong><div style="margin-left: 10px;">${cartItems}</div></p>
+          ${orderTotal > 0 ? `<p><strong>Total: ₹${orderTotal}</strong></p>` : ''}
+          <p><strong>Address:</strong> ${order.address}</p>
+          <p><strong>Status:</strong> <span id="status-${order.id}">${order.status}</span></p>
+          <button onclick="approveOrder(${order.id})" ${order.status !== 'pending' ? 'disabled' : ''}>Approve</button>
+          <button onclick="rejectOrder(${order.id})" ${order.status !== 'pending' ? 'disabled' : ''}>Reject</button>
+          <button onclick="shipOrder(${order.id})" ${order.status !== 'approved' ? 'disabled' : ''}>Ship & Send Email</button>
+        </div>
+      `;
+      }).join("");
+    }
+
+    async function approveOrder(id) {
+      await fetch(`http://localhost:5000/admin/approve/${id}`, { method: "POST" });
+      document.getElementById(`status-${id}`).textContent = "approved";
+      loadOrders();
+    }
+
+    async function rejectOrder(id) {
+      await fetch(`http://localhost:5000/admin/reject/${id}`, { method: "POST" });
+      document.getElementById(`status-${id}`).textContent = "rejected";
+      loadOrders();
+    }
+
+    async function shipOrder(id) {
+      const res = await fetch(`http://localhost:5000/admin/ship/${id}`, { method: "POST" });
+      alert(await res.text());
+      document.getElementById(`status-${id}`).textContent = "shipped";
+      loadOrders();
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location = "accounts.html";
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
